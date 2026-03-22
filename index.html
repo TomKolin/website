@@ -18,6 +18,7 @@ input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;
 #result {margin:20px;font-size:22px;color:#00ff88;}
 .calc {background:#1a1a1a;padding:20px;border-radius:15px;max-width:500px;margin:20px auto;}
 #paymentOptions {display:none; margin-top:20px;}
+#support {margin-top:20px;}
 </style>
 </head>
 <body>
@@ -46,6 +47,10 @@ input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;
 <div id="status"></div>
 <div id="progress"></div>
 <div id="progress-bar"><div id="progress-fill"></div></div>
+
+<div id="support">
+  <button onclick="contactSupport()">💬 Написать в поддержку</button>
+</div>
 
 <script>
 const tg = window.Telegram.WebApp;
@@ -82,7 +87,7 @@ function openWallet(){
     // Пытаемся открыть TON Wallet через ссылку
     window.open(tonLink, "_blank");
 
-    // Fallback через 1 секунду: если кошелек не открылся, показываем инструкцию
+    // Fallback через 1 секунду
     setTimeout(()=>{
         alert("Если TON Wallet не открылся автоматически, вставьте данные из буфера обмена в ваш кошелек.");
     }, 1000);
@@ -100,6 +105,13 @@ function copyData(){
 
 function installWallet(){
     window.open("https://ton.org/wallets", "_blank");
+}
+
+// ====== Кнопка поддержки ======
+function contactSupport(){
+    const supportUsername = "drogovoz84"; // твой Telegram ник
+    const telegramLink = `https://t.me/${supportUsername}`;
+    window.open(telegramLink, "_blank");
 }
 
 // ====== Проверка оплаты ======
@@ -139,17 +151,7 @@ async function checkPayment(comment, attempt=1){
     }
 }
 
-  <div id="support" style="margin-top:20px;">
-  <button onclick="contactSupport()">💬 Написать в поддержку</button>
-</div>
-
-<script>
-function contactSupport(){
-    // Здесь вставь свой Telegram-никнейм без @
-    const supportUsername = "drogovoz84"; 
-    const telegramLink = `https://t.me/${supportUsername}`;
-    window.open(telegramLink, "_blank");
-// ====== Кнопка “Оплатить” теперь только показывает варианты ======
+// ====== Кнопка “Оплатить” только показывает варианты ======
 document.getElementById("payBtn").onclick = showPaymentOptions;
 
 </script>
