@@ -60,10 +60,9 @@ const userId = tg.initDataUnsafe?.user?.id || 0;
 const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
 const amountTON = 100000000; // 0.1 TON в нанотонах
 
-// ====== АКТУАЛЬНЫЙ URL БЭКЕНДА НА REPLIT ======
-const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrqft.riker.replit.dev/check_payment";
+// ====== ПРАВИЛЬНЫЙ URL БЭКЕНДА ======
+const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
 
-// ====== Калькулятор ======
 function calculate(){
     const amount = parseFloat(document.getElementById('amount').value);
     const apy = parseFloat(document.getElementById('platform').value);
@@ -71,12 +70,10 @@ function calculate(){
     document.getElementById('result').innerHTML = `Ежемесячно: <strong>${monthly} $</strong>`;
 }
 
-// ====== Показ блока оплаты ======
 function showPaymentOptions(){
     document.getElementById("paymentOptions").style.display = "block";
 }
 
-// ====== Открытие кошелька ======
 function openWallet(){
     const comment = `passiveguide_${userId}`;
     const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
@@ -89,11 +86,9 @@ function openWallet(){
         alert("Если TON Wallet не открылся автоматически, вставьте данные из буфера обмена в ваш кошелек.");
     }, 1000);
     
-    // Начинаем проверку оплаты через 3 секунды
     setTimeout(() => checkPayment(comment), 3000);
 }
 
-// ====== Копирование данных ======
 function copyData(){
     const comment = `passiveguide_${userId}`;
     const text = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`;
@@ -101,25 +96,21 @@ function copyData(){
     alert("Данные скопированы! Вставь их в кошелёк.");
 }
 
-// ====== Установка кошелька ======
 function installWallet(){
     window.open("https://ton.org/wallets", "_blank");
 }
 
-// ====== Поддержка ======
 function contactSupport(){
     const supportUsername = "AntonDrogovoz";
     window.open(`https://t.me/${supportUsername}`, "_blank");
 }
 
-// ====== Проверка оплаты ======
 async function checkPayment(comment, attempt = 1){
     const statusDiv = document.getElementById("status");
     const progressDiv = document.getElementById("progress");
     const progressFill = document.getElementById("progress-fill");
     const payBtn = document.getElementById("payBtn");
     
-    // Максимум 20 попыток (100 секунд)
     if(attempt > 20){
         statusDiv.innerHTML = "⚠️ Платеж не найден. Попробуйте ещё раз или обратитесь в поддержку.";
         progressDiv.innerHTML = "";
@@ -132,45 +123,38 @@ async function checkPayment(comment, attempt = 1){
     progressFill.style.width = `${(attempt / 20) * 100}%`;
     
     try {
-        console.log(`Отправка запроса на: ${BACKEND_URL}`);
-        console.log(`Комментарий: ${comment}`);
+        console.log(`📡 Запрос к: ${BACKEND_URL}`);
+        console.log(`💬 Комментарий: ${comment}`);
         
         const resp = await fetch(BACKEND_URL, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ comment: comment })
         });
         
         const data = await resp.json();
-        console.log("Ответ от сервера:", data);
+        console.log("✅ Ответ:", data);
         
         if(data.paid){
             statusDiv.innerHTML = "✅ Оплата подтверждена! PDF отправлен в Telegram. Проверьте чат с ботом.";
             progressDiv.innerHTML = "";
             progressFill.style.width = '100%';
             payBtn.disabled = true;
-            
-            // Скрываем кнопки оплаты
             document.getElementById("paymentOptions").style.display = "none";
         } else {
-            // Повторяем проверку через 5 секунд
             setTimeout(() => checkPayment(comment, attempt + 1), 5000);
         }
     } catch(e){
-        console.error("Ошибка при проверке:", e);
+        console.error("❌ Ошибка:", e);
         progressDiv.innerHTML = "⚠️ Ошибка соединения с сервером. Повтор через 5 секунд...";
         setTimeout(() => checkPayment(comment, attempt + 1), 5000);
     }
 }
 
-// Назначаем обработчик на кнопку оплаты
 document.getElementById("payBtn").onclick = showPaymentOptions;
 
-// Показываем информацию для отладки
-console.log("User ID:", userId);
-console.log("Backend URL:", BACKEND_URL);
+console.log("👤 User ID:", userId);
+console.log("🔗 Backend URL:", BACKEND_URL);
 </script>
 </body>
 </html>
