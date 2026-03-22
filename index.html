@@ -1,157 +1,87 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Crypto Passive 2026</title>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<style>
-body {font-family:Arial;background:#0f0f0f;color:#fff;text-align:center;padding:20px;}
-h1 {color:#00ff88;}
-button {background:#00ff88;color:#000;padding:15px 40px;font-size:20px;border:none;border-radius:10px;cursor:pointer;margin:20px;transition:0.3s, transform 0.2s;}
-button:disabled {background:#555;color:#ccc;cursor:default;}
-button:hover:not(:disabled){transform:scale(1.05);}
-input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;font-size:16px;}
-#status, #progress {margin-top:20px;font-size:18px;color:#00ff88;}
-#progress-bar {height:10px;background:#333;border-radius:5px;margin:10px auto;width:80%;}
-#progress-fill {height:10px;background:#00ff88;width:0%;border-radius:5px;transition:width 0.5s;}
-#result {margin:20px;font-size:22px;color:#00ff88;}
-.calc {background:#1a1a1a;padding:20px;border-radius:15px;max-width:500px;margin:20px auto;}
-#paymentOptions {display:none; margin-top:20px;}
-#support {margin-top:20px;}
-</style>
-</head>
-<body>
+import os
+import requests
+from flask import Flask, request, jsonify
+from telegram import Bot
+from telegram.constants import ParseMode
 
-<h1>🚀 Crypto Passive 2026</h1>
-<p>Полный гайд + калькулятор пассивного дохода</p>
+# ====== Настройки ======
+BOT_TOKEN = "ТВОЙ_BOT_TOKEN"
+YOUR_WALLET = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni"
+PDF_FILENAME = os.path.join(os.path.dirname(__file__), "guide_ru.pdf")
+MIN_VALUE_NANOTON = 100_000_000  # 0.1 TON в нанотонах
 
-<div class="calc">
-<h2>Сколько заработаешь пассивно?</h2>
-<input type="number" id="amount" value="1000" placeholder="Введите сумму $">
-<select id="platform">
-  <option value="12">MEXC/Bybit (~12%)</option>
-  <option value="5">TON Staking (~5%)</option>
-</select>
-<button onclick="calculate()">Рассчитать</button>
-<div id="result"></div>
-</div>
+bot = Bot(token=BOT_TOKEN)
+processed = set()
 
-<button id="payBtn">💰 Оплатить 0.1 TON через Telegram Wallet</button>
+app = Flask(__name__)
 
-<div id="paymentOptions">
-  <button onclick="openWallet()">💎 Открыть кошелёк</button><br>
-  <button onclick="copyData()">📋 Скопировать адрес</button><br>
-  <button onclick="installWallet()">📲 Установить кошелёк</button>
-</div>
+# ====== Проверка сервера ======
+@app.route("/")
+def home():
+    return "✅ Backend работает"
 
-<div id="status"></div>
-<div id="progress"></div>
-<div id="progress-bar"><div id="progress-fill"></div></div>
+# ====== Основной эндпоинт ======
+@app.route("/check_payment", methods=["POST"])
+def check_payment():
+    data = request.json
+    comment = data.get("comment", "")
+    paid = False
 
-<div id="support">
-  <button onclick="contactSupport()">💬 Написать в поддержку</button>
-</div>
+    print(f"\n🔍 Проверка платежа: {comment}")
 
-<script>
-const tg = window.Telegram.WebApp;
-tg.ready();
-const userId = tg.initDataUnsafe?.user?.id || 0;
-const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
+    try:
+        url = f"https://toncenter.com/api/v2/getTransactions?address={YOUR_WALLET}&limit=20"
+        response = requests.get(url)
+        data = response.json()
 
-// 0.1 TON в нанотонах
-const amountTON = 100000000;
+        if "result" not in data:
+            print("❌ Ошибка TON API:", data)
+            return jsonify({"paid": False})
 
-// Ваш backend
-const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
+        for tx in data["result"]:
+            tx_hash = tx["transaction_id"]["hash"]
 
-// ====== Калькулятор ======
-function calculate(){
-    const amount = parseFloat(document.getElementById('amount').value);
-    const apy = parseFloat(document.getElementById('platform').value);
-    const monthly = (amount * apy / 100 / 12).toFixed(2);
-    document.getElementById('result').innerHTML = `Ежемесячно: <strong>${monthly} $</strong>`;
-}
+            if tx_hash in processed:
+                continue
 
-// ====== Показ блока оплаты ======
-function showPaymentOptions(){
-    document.getElementById("paymentOptions").style.display = "block";
-}
+            in_msg = tx.get("in_msg", {})
+            value_nanoton = int(in_msg.get("value", 0))
+            value_ton = value_nanoton / 1_000_000_000
+            tx_comment = in_msg.get("message", "")
 
-// ====== Действия кнопок оплаты ======
-function openWallet(){
-    const comment = `passiveguide_${userId}`;
-    const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
+            print(f"➡️ TX HASH: {tx_hash}")
+            print(f"    VALUE: {value_ton} TON | COMMENT: {tx_comment}")
 
-    const copyText = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`;
-    navigator.clipboard.writeText(copyText);
+            # Проверяем сумму и комментарий
+            if value_nanoton >= MIN_VALUE_NANOTON and tx_comment == comment:
+                try:
+                    user_id = int(comment.split("_")[1])
 
-    window.open(tonLink, "_blank");
+                    if not os.path.exists(PDF_FILENAME):
+                        print("❌ PDF не найден")
+                        continue
 
-    setTimeout(()=>{
-        alert("Если TON Wallet не открылся автоматически, вставьте данные из буфера обмена в ваш кошелек.");
-    }, 1000);
+                    with open(PDF_FILENAME, "rb") as pdf_file:
+                        bot.send_document(
+                            chat_id=user_id,
+                            document=pdf_file,
+                            caption="✅ Оплата получена! Вот твой гайд 🚀",
+                            parse_mode=ParseMode.MARKDOWN,
+                        )
 
-    setTimeout(()=>checkPayment(comment),3000);
-}
+                    print(f"✅ PDF отправлен пользователю {user_id}")
+                    processed.add(tx_hash)
+                    paid = True
+                    break
 
-function copyData(){
-    const comment = `passiveguide_${userId}`;
-    const text = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`;
-    navigator.clipboard.writeText(text);
-    alert("Данные скопированы! Вставь их в кошелёк.");
-}
+                except Exception as e:
+                    print("❌ Ошибка отправки PDF:", e)
 
-function installWallet(){
-    window.open("https://ton.org/wallets", "_blank");
-}
+    except Exception as e:
+        print("❌ Ошибка проверки транзакций:", e)
 
-function contactSupport(){
-    const supportUsername = "AntonDrogovoz";
-    window.open(`https://t.me/${supportUsername}`, "_blank");
-}
+    return jsonify({"paid": paid})
 
-// ====== Проверка оплаты ======
-async function checkPayment(comment, attempt=1){
-    const statusDiv = document.getElementById("status");
-    const progressDiv = document.getElementById("progress");
-    const progressFill = document.getElementById("progress-fill");
 
-    if(attempt>20){
-        statusDiv.innerHTML = "⚠️ Платеж не найден. Попробуйте ещё раз.";
-        progressDiv.innerHTML = "";
-        progressFill.style.width = '0%';
-        document.getElementById("payBtn").disabled = false;
-        return;
-    }
-
-    progressDiv.innerHTML = `⏳ Проверка оплаты... попытка ${attempt}/20`;
-    progressFill.style.width = `${(attempt/20)*100}%`;
-
-    try {
-        const resp = await fetch(BACKEND_URL, {
-            method: "POST",
-            headers: {"Content-Type":"application/json"},
-            body: JSON.stringify({comment: comment})
-        });
-        const data = await resp.json();
-        if(data.paid){
-            statusDiv.innerHTML = "✅ Оплата подтверждена! PDF отправлен в Telegram.";
-            progressDiv.innerHTML = "";
-            progressFill.style.width = '100%';
-            document.getElementById("payBtn").disabled = true;
-        } else {
-            setTimeout(()=>checkPayment(comment, attempt+1), 5000);
-        }
-    } catch(e){
-        console.error(e);
-        progressDiv.innerHTML = "⚠️ Ошибка при проверке оплаты. Повтор через 5 секунд...";
-        setTimeout(()=>checkPayment(comment, attempt+1), 5000);
-    }
-}
-
-// кнопка "Оплатить" только показывает варианты
-document.getElementById("payBtn").onclick = showPaymentOptions;
-</script>
-</body>
-</html>
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=3000)
