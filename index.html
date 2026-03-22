@@ -6,6 +6,7 @@
 <title>Crypto Passive 2026</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
+/* (стили остаются те же, что в предыдущей версии) */
 * {
     margin: 0;
     padding: 0;
@@ -165,16 +166,6 @@ button:disabled {
     color: #00ff88;
     margin-top: 20px;
 }
-
-.wallet-badge {
-    display: inline-block;
-    background: #2a2a2a;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    color: #00ff88;
-    margin-left: 10px;
-}
 </style>
 </head>
 <body>
@@ -197,7 +188,7 @@ button:disabled {
     <button id="payBtn" class="payment-btn">💰 Оплатить 0.1 TON</button>
 
     <div id="paymentOptions" class="payment-options">
-        <button onclick="openWallet()" id="walletBtn">💎 Открыть кошелёк</button>
+        <button onclick="openWallet()">💎 Открыть кошелёк</button>
         <button onclick="copyData()">📋 Скопировать реквизиты</button>
         <button onclick="installWallet()">📲 Установить кошелёк</button>
     </div>
@@ -216,15 +207,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let userId = 0;
     let userFirstName = 'Гость';
-    let platform = 'web';
     
     if (tg) {
         tg.ready();
         if (tg.expand) tg.expand();
         userId = tg.initDataUnsafe?.user?.id || 0;
         userFirstName = tg.initDataUnsafe?.user?.first_name || 'Гость';
-        platform = tg.platform || 'web';
-        console.log('✅ Telegram WebApp инициализирован, платформа:', platform);
+        console.log('✅ Telegram WebApp инициализирован');
     }
     
     const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
@@ -232,15 +221,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
     
     let isPaying = false;
-    
-    // Определяем, есть ли встроенный кошелёк Telegram
-    const hasTelegramWallet = platform === 'ios' || platform === 'android';
-    
-    // Меняем текст кнопки если есть встроенный кошелёк
-    const walletBtn = document.getElementById('walletBtn');
-    if (walletBtn && hasTelegramWallet) {
-        walletBtn.innerHTML = '💎 Telegram Wallet (встроенный)';
-    }
     
     if (tg) {
         tg.showPopup({
@@ -310,31 +290,43 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.openWallet = function() {
         const comment = `passiveguide_${userId}`;
-        
-        let walletLink;
-        let copyText;
-        
-        if (hasTelegramWallet) {
-            // Встроенный кошелёк Telegram
-            walletLink = `https://t.me/wallet?start=transfer_${address}_${amountTON}_${encodeURIComponent(comment)}`;
-            copyText = `💎 Комментарий: ${comment}\n💰 Сумма: 0.1 TON`;
-        } else {
-            // Внешние кошельки (TON Keeper, Tonhub)
-            walletLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
-            copyText = `💎 Адрес: ${address}\n📝 Комментарий: ${comment}\n💰 Сумма: 0.1 TON`;
-        }
+        const copyText = `💎 Адрес: ${address}
+📝 КОММЕНТАРИЙ (обязательно!): ${comment}
+💰 Сумма: 0.1 TON
+
+⚠️ ВАЖНО:
+1. Укажите комментарий ТОЧНО как выше
+2. Без комментария оплата не будет засчитана
+3. Сумма: ровно 0.1 TON`;
         
         navigator.clipboard.writeText(copyText);
+        
+        const isTelegramWallet = tg?.platform === 'ios' || tg?.platform === 'android';
+        const walletLink = isTelegramWallet ? "https://t.me/wallet" : `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
+        const walletName = isTelegramWallet ? "Telegram Wallet" : "TON Keeper / Tonhub";
+        
         window.open(walletLink, "_blank");
         
         if (tg) {
             tg.showPopup({
-                title: '💎 Оплата',
-                message: `Обязательный комментарий:\n"${comment}"\n\nОтправьте ровно 0.1 TON\n\nПосле оплаты PDF придёт через 10-30 секунд`,
-                buttons: [{type: 'close'}]
+                title: '💎 Инструкция',
+                message: `1️⃣ Открывается ${walletName}\n\n2️⃣ Вставьте данные из буфера обмена\n\n3️⃣ Обязательно укажите комментарий:\n"${comment}"\n\n4️⃣ Отправьте ровно 0.1 TON\n\nПосле оплаты PDF придёт через 10-30 секунд`,
+                buttons: [
+                    {id: 'copy', text: '📋 Скопировать данные'},
+                    {type: 'close', text: 'Понятно'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'copy') {
+                    navigator.clipboard.writeText(copyText);
+                    tg.showPopup({
+                        title: '✅ Скопировано!',
+                        message: 'Данные скопированы. Вставьте их в кошелёк при оплате.',
+                        buttons: [{type: 'close'}]
+                    });
+                }
             });
         } else {
-            alert(`Комментарий: ${comment}\nСумма: 0.1 TON`);
+            alert(`Данные скопированы!\n\nКомментарий: ${comment}\nСумма: 0.1 TON`);
         }
         
         setTimeout(() => checkPayment(comment), 3000);
@@ -343,7 +335,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.copyData = function() {
         const comment = `passiveguide_${userId}`;
         const text = `💎 Адрес: ${address}\n📝 КОММЕНТАРИЙ: ${comment}\n💰 Сумма: 0.1 TON`;
-        
         navigator.clipboard.writeText(text);
         showStatus('✅ Данные скопированы!', 'success');
     };
@@ -388,7 +379,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.paid) {
                 showProgress(100);
                 showStatus('✅ Оплата подтверждена! PDF отправлен в Telegram!', 'success');
-                
                 document.getElementById("payBtn").disabled = true;
                 document.getElementById("paymentOptions").style.display = "none";
                 
@@ -412,7 +402,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch(e) {
             console.error("Ошибка:", e);
             showStatus('⚠️ Ошибка соединения. Повтор...', 'error');
-            
             setTimeout(() => {
                 isPaying = false;
                 checkPayment(comment, attempt + 1);
@@ -429,7 +418,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     console.log("👤 User ID:", userId);
-    console.log("📱 Platform:", platform);
     console.log("🔗 Backend URL:", BACKEND_URL);
 });
 </script>
