@@ -36,7 +36,7 @@ input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;
 <div id="result"></div>
 </div>
 
-<button id="payBtn">💰 Оплатить 5 TON через Telegram Wallet</button>
+<button id="payBtn">💰 Оплатить 0.1 TON через Telegram Wallet</button>
 
 <div id="paymentOptions">
   <button onclick="openWallet()">💎 Открыть кошелёк</button><br>
@@ -57,7 +57,7 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 const userId = tg.initDataUnsafe?.user?.id || 0;
 const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
-const amountTON = 100000000;
+const amountTON = 100000000; // 0.1 TON в нанотонах
 const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
 
 // ====== Калькулятор ======
@@ -78,27 +78,21 @@ function openWallet(){
     const comment = `passiveguide_${userId}`;
     const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
 
-    // Автокопирование всех данных в буфер обмена
-    const copyText = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 5 TON`;
-    navigator.clipboard.writeText(copyText).then(()=>{
-        console.log("Данные скопированы в буфер обмена");
-    });
+    const copyText = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`;
+    navigator.clipboard.writeText(copyText);
 
-    // Пытаемся открыть TON Wallet через ссылку
     window.open(tonLink, "_blank");
 
-    // Fallback через 1 секунду
     setTimeout(()=>{
         alert("Если TON Wallet не открылся автоматически, вставьте данные из буфера обмена в ваш кошелек.");
     }, 1000);
 
-    // Проверка оплаты через 3 секунды
     setTimeout(()=>checkPayment(comment),3000);
 }
 
 function copyData(){
     const comment = `passiveguide_${userId}`;
-    const text = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 5 TON`;
+    const text = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`;
     navigator.clipboard.writeText(text);
     alert("Данные скопированы! Вставь их в кошелёк.");
 }
@@ -107,11 +101,9 @@ function installWallet(){
     window.open("https://ton.org/wallets", "_blank");
 }
 
-// ====== Кнопка поддержки ======
 function contactSupport(){
-    const supportUsername = "AntonDrogovoz"; // твой Telegram ник
-    const telegramLink = `https://t.me/${supportUsername}`;
-    window.open(telegramLink, "_blank");
+    const supportUsername = "AntonDrogovoz";
+    window.open(`https://t.me/${supportUsername}`, "_blank");
 }
 
 // ====== Проверка оплаты ======
@@ -119,6 +111,7 @@ async function checkPayment(comment, attempt=1){
     const statusDiv = document.getElementById("status");
     const progressDiv = document.getElementById("progress");
     const progressFill = document.getElementById("progress-fill");
+
     if(attempt>20){
         statusDiv.innerHTML = "⚠️ Платеж не найден. Попробуйте ещё раз.";
         progressDiv.innerHTML = "";
@@ -126,6 +119,7 @@ async function checkPayment(comment, attempt=1){
         document.getElementById("payBtn").disabled = false;
         return;
     }
+
     progressDiv.innerHTML = `⏳ Проверка оплаты... попытка ${attempt}/20`;
     progressFill.style.width = `${(attempt/20)*100}%`;
 
@@ -151,7 +145,6 @@ async function checkPayment(comment, attempt=1){
     }
 }
 
-// ====== Кнопка “Оплатить” только показывает варианты ======
 document.getElementById("payBtn").onclick = showPaymentOptions;
 
 </script>
