@@ -41,12 +41,24 @@
     }
 
     function pay() {
-      const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";  // ← замени!
-      const comment = `passiveguide_${userId}`;
-      const deepLink = `ton://transfer/${address}?amount=5000000000&text=${encodeURIComponent(comment)}`;
-      
-      alert(`Отправь ровно 5 TON на:\n${address}\n\nКомментарий: ${comment}\n\n(ссылка ниже откроет кошелёк)`);
-      window.open(deepLink, '_blank');
+  const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
+  const comment = `passiveguide_${userId}`;
+  const amount = 5000000000; // 5 TON
+
+  const tonLink = `ton://transfer/${address}?amount=${amount}&text=${encodeURIComponent(comment)}`;
+  const fallback = "https://ton.org/wallets";
+
+  // пробуем открыть кошелек
+  window.location.href = tonLink;
+
+  // если не открылся — отправляем на установку
+  setTimeout(() => {
+    if (!document.hidden) {
+      alert("У тебя не установлен кошелек. Сейчас откроется страница установки.");
+      window.location.href = fallback;
+    }
+  }, 1500);
+}
     }
   </script>
 </body>
