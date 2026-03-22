@@ -11,14 +11,29 @@ h1 {color:#00ff88;}
 button {background:#00ff88;color:#000;padding:15px 40px;font-size:20px;border:none;border-radius:10px;cursor:pointer;margin:20px;transition:0.3s, transform 0.2s;}
 button:disabled {background:#555;color:#ccc;cursor:default;}
 button:hover:not(:disabled){transform:scale(1.05);}
+input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;font-size:16px;}
 #status, #progress {margin-top:20px;font-size:18px;color:#00ff88;}
 #progress-bar {height:10px;background:#333;border-radius:5px;margin:10px auto;width:80%;}
 #progress-fill {height:10px;background:#00ff88;width:0%;border-radius:5px;transition:width 0.5s;}
+#result {margin:20px;font-size:22px;color:#00ff88;}
+.calc {background:#1a1a1a;padding:20px;border-radius:15px;max-width:500px;margin:20px auto;}
 </style>
 </head>
 <body>
 <h1>🚀 Crypto Passive 2026</h1>
 <p>Полный гайд + калькулятор пассивного дохода</p>
+
+<div class="calc">
+<h2>Сколько заработаешь пассивно?</h2>
+<input type="number" id="amount" value="1000" placeholder="Введите сумму $">
+<select id="platform">
+  <option value="12">MEXC/Bybit (~12%)</option>
+  <option value="5">TON Staking (~5%)</option>
+</select>
+<button onclick="calculate()">Рассчитать</button>
+<div id="result"></div>
+</div>
+
 <button id="payBtn">💰 Оплатить 5 TON через Telegram Wallet</button>
 <div id="status"></div>
 <div id="progress"></div>
@@ -29,11 +44,18 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 const userId = tg.initDataUnsafe?.user?.id || 0;
 const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
-const amount = 5000000000;
-
-// === Используем правильный публичный URL Replit для проверки оплаты ===
+const amountTON = 5000000000;
 const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
 
+// ====== Калькулятор ======
+function calculate(){
+    const amount = parseFloat(document.getElementById('amount').value);
+    const apy = parseFloat(document.getElementById('platform').value);
+    const monthly = (amount * apy / 100 / 12).toFixed(2);
+    document.getElementById('result').innerHTML = `Ежемесячно: <strong>${monthly} $</strong>`;
+}
+
+// ====== WebApp оплата ======
 async function checkPayment(comment, attempt=1){
     const statusDiv = document.getElementById("status");
     const progressDiv = document.getElementById("progress");
@@ -77,7 +99,7 @@ document.getElementById("payBtn").onclick = () => {
     }
     document.getElementById("payBtn").disabled = true;
     const comment = `passiveguide_${userId}`;
-    const tonLink = `ton://transfer/${address}?amount=${amount}&text=${encodeURIComponent(comment)}`;
+    const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
     window.location.href = tonLink;
     setTimeout(()=>checkPayment(comment),3000);
 };
