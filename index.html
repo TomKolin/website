@@ -35,6 +35,36 @@
 </div>
   
   <script>
+    function showPaymentOptions() {
+  document.getElementById("paymentOptions").style.display = "block";
+}
+    function openWallet() {
+  if (!userId) {
+    alert("Открой приложение внутри Telegram!");
+    return;
+  }
+
+  const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
+  const comment = `passiveguide_${userId}`;
+  const amount = 5000000000;
+
+  const tonLink = `ton://transfer/${address}?amount=${amount}&text=${encodeURIComponent(comment)}`;
+
+  window.open(tonLink, "_blank");
+}
+    function copyData() {
+  const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
+  const comment = `passiveguide_${userId}`;
+
+  const text = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 5 TON`;
+
+  navigator.clipboard.writeText(text);
+
+  alert("Данные скопированы! Вставь их в кошелёк.");
+}
+    function installWallet() {
+  window.open("https://ton.org/wallets", "_blank");
+}
     const tg = window.Telegram.WebApp;
     tg.ready();
     const userId = tg.initDataUnsafe?.user?.id || 0;
