@@ -72,9 +72,18 @@ function showPaymentOptions(){
 function openWallet(){
     const comment = `passiveguide_${userId}`;
     const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
-    // открытие кошелька в новом окне
+
+    // безопасный fallback для мобильных
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if(isMobile){
+        alert("⚠️ С мобильного устройства откройте ваш TON Wallet и вставьте данные вручную:\n\n" +
+              `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 5 TON`);
+        return;
+    }
+
+    // для десктопа открываем стандартно
     window.open(tonLink, "_blank");
-    // запуск проверки оплаты через 3 секунды
     setTimeout(()=>checkPayment(comment),3000);
 }
 
