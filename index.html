@@ -1,204 +1,422 @@
-import os
-import requests
-import logging
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Crypto Passive 2026</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-# ====== НАСТРОЙКА ЛОГИРОВАНИЯ ======
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('bot_debug.log', encoding='utf-8'),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%);
+    color: #fff;
+    padding: 20px;
+    min-height: 100vh;
+}
 
-# ====== Настройки ======
-BOT_TOKEN = "8696264655:AAGyn82KU7D1F9nKiBuQLcjQd2p2HHH1PEQ"
-YOUR_WALLET = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni"
-PDF_FILENAME = os.path.join(os.path.dirname(__file__), "guide_ru.pdf")
-MIN_VALUE_NANOTON = 100_000_000  # 0.1 TON
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+}
 
-# Хранилище обработанных транзакций (сохраняем в файл)
-PROCESSED_FILE = "processed_txs.txt"
+h1 {
+    color: #00ff88;
+    font-size: 28px;
+    margin-bottom: 8px;
+    text-align: center;
+}
 
-def load_processed():
-    """Загружает список обработанных транзакций из файла"""
-    if os.path.exists(PROCESSED_FILE):
-        with open(PROCESSED_FILE, 'r') as f:
-            return set(line.strip() for line in f)
-    return set()
+.subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 30px;
+    text-align: center;
+}
 
-def save_processed(tx_hash):
-    """Сохраняет обработанную транзакцию в файл"""
-    with open(PROCESSED_FILE, 'a') as f:
-        f.write(f"{tx_hash}\n")
+.calc {
+    background: rgba(26, 26, 26, 0.9);
+    padding: 24px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
 
-processed = load_processed()
+.calc h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #00ff88;
+}
 
-app = Flask(__name__)
-CORS(app)
+input, select {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    border-radius: 12px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 16px;
+}
 
-def send_pdf_via_http(chat_id, pdf_path, caption):
-    """Отправка PDF через прямой HTTP запрос к Telegram API"""
-    try:
-        url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
+input:focus, select:focus {
+    outline: none;
+    border-color: #00ff88;
+}
+
+button {
+    background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+    color: #000;
+    padding: 14px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin: 10px 0;
+    width: 100%;
+}
+
+button:disabled {
+    background: #555;
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.payment-btn {
+    background: linear-gradient(135deg, #ff8800 0%, #cc6600 100%);
+    margin: 20px 0;
+}
+
+.payment-options {
+    display: none;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.payment-options button {
+    background: #2a2a2a;
+    color: #fff;
+    margin: 5px 0;
+}
+
+.status {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.status.success {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    border: 1px solid #00ff88;
+}
+
+.status.error {
+    background: rgba(255, 68, 68, 0.2);
+    color: #ff4444;
+    border: 1px solid #ff4444;
+}
+
+.status.info {
+    background: rgba(255, 136, 0, 0.2);
+    color: #ff8800;
+    border: 1px solid #ff8800;
+}
+
+.progress-bar {
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    margin: 15px auto;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff88, #00cc66);
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 255, 136, 0.1);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.result strong {
+    color: #00ff88;
+    font-size: 24px;
+}
+
+.support-btn {
+    background: transparent;
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    margin-top: 20px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>🚀 Crypto Passive 2026</h1>
+    <div class="subtitle">Полный гайд + калькулятор пассивного дохода</div>
+
+    <div class="calc">
+        <h2>📊 Калькулятор дохода</h2>
+        <input type="number" id="amount" value="1000" placeholder="Введите сумму в $">
+        <select id="platform">
+            <option value="12">💰 MEXC/Bybit (~12% годовых)</option>
+            <option value="5">💎 TON Staking (~5% годовых)</option>
+            <option value="8">📈 Binance Earn (~8% годовых)</option>
+        </select>
+        <button onclick="calculate()">📈 Рассчитать доход</button>
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <button id="payBtn" class="payment-btn">💰 Оплатить 0.1 TON</button>
+
+    <div id="paymentOptions" class="payment-options">
+        <button onclick="openWallet()">💎 Открыть TON Wallet</button>
+        <button onclick="copyData()">📋 Скопировать реквизиты</button>
+        <button onclick="installWallet()">📲 Установить кошелёк</button>
+    </div>
+
+    <div id="status"></div>
+    <div id="progressBar" class="progress-bar" style="display: none;">
+        <div id="progressFill" class="progress-fill"></div>
+    </div>
+
+    <button id="supportBtn" class="support-btn" onclick="contactSupport()">💬 Поддержка</button>
+</div>
+
+<script>
+// Ждём загрузку страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram?.WebApp;
+    
+    let userId = 0;
+    let userFirstName = 'Гость';
+    
+    if (tg) {
+        tg.ready();
+        if (tg.expand) tg.expand();
+        userId = tg.initDataUnsafe?.user?.id || 0;
+        userFirstName = tg.initDataUnsafe?.user?.first_name || 'Гость';
+        console.log('✅ Telegram WebApp инициализирован');
+    } else {
+        console.log('⚠️ Telegram WebApp не найден');
+    }
+    
+    const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
+    const amountTON = 100000000;
+    const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
+    
+    let isPaying = false;
+    
+    // Показываем приветствие
+    if (tg) {
+        tg.showPopup({
+            title: '👋 Привет!',
+            message: `${userFirstName}, для получения гайда:\n\n1️⃣ Нажмите "Оплатить 0.1 TON"\n2️⃣ Укажите комментарий\n3️⃣ Отправьте перевод\n\nПосле оплаты PDF придёт сюда!`,
+            buttons: [{type: 'close'}]
+        });
+    } else {
+        alert(`Привет, ${userFirstName}! Нажми на кнопку оплаты, чтобы получить гайд.`);
+    }
+    
+    // Функции
+    window.calculate = function() {
+        const amount = parseFloat(document.getElementById('amount').value);
+        const apy = parseFloat(document.getElementById('platform').value);
         
-        with open(pdf_path, 'rb') as f:
-            files = {
-                'document': ('guide_ru.pdf', f, 'application/pdf')
+        if (isNaN(amount) || amount <= 0) {
+            showStatus('Введите корректную сумму', 'error');
+            return;
+        }
+        
+        const monthly = (amount * apy / 100 / 12).toFixed(2);
+        const yearly = (amount * apy / 100).toFixed(2);
+        
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            📅 <strong>Ежемесячно:</strong> ${monthly} $<br>
+            📆 <strong>Годовой доход:</strong> ${yearly} $<br>
+            📊 <strong>Доходность:</strong> ${apy}% годовых
+        `;
+    };
+    
+    window.showStatus = function(message, type = 'info') {
+        const statusDiv = document.getElementById('status');
+        statusDiv.className = `status ${type}`;
+        statusDiv.innerHTML = message;
+        statusDiv.style.display = 'block';
+        
+        if (type !== 'error') {
+            setTimeout(() => {
+                if (statusDiv.innerHTML === message) {
+                    statusDiv.style.display = 'none';
+                }
+            }, 5000);
+        }
+    };
+    
+    window.showProgress = function(percent, text) {
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        
+        progressBar.style.display = 'block';
+        progressFill.style.width = `${percent}%`;
+        
+        if (text) {
+            showStatus(text, 'info');
+        }
+        
+        if (percent >= 100) {
+            setTimeout(() => {
+                progressBar.style.display = 'none';
+            }, 1000);
+        }
+    };
+    
+    window.showPaymentOptions = function() {
+        document.getElementById("paymentOptions").style.display = "flex";
+    };
+    
+    window.openWallet = function() {
+        const comment = `passiveguide_${userId}`;
+        const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
+        
+        const copyText = `💎 Адрес кошелька: ${address}
+📝 КОММЕНТАРИЙ (обязательно!): ${comment}
+💰 Сумма: 0.1 TON
+
+⚠️ ВАЖНО:
+1. Укажите комментарий ТОЧНО как выше
+2. Без комментария оплата не будет засчитана
+3. Сумма: ровно 0.1 TON`;
+        
+        navigator.clipboard.writeText(copyText);
+        window.open(tonLink, "_blank");
+        
+        if (tg) {
+            tg.showPopup({
+                title: '💎 Инструкция по оплате',
+                message: `Обязательный комментарий:\n"${comment}"\n\nОтправьте ровно 0.1 TON\n\nПосле оплаты PDF придёт через 10-30 секунд`,
+                buttons: [{type: 'close'}]
+            });
+        } else {
+            alert(`Комментарий: ${comment}\nСумма: 0.1 TON\nДанные скопированы в буфер`);
+        }
+        
+        setTimeout(() => checkPayment(comment), 3000);
+    };
+    
+    window.copyData = function() {
+        const comment = `passiveguide_${userId}`;
+        const text = `💎 Адрес: ${address}
+📝 КОММЕНТАРИЙ: ${comment}
+💰 Сумма: 0.1 TON`;
+        
+        navigator.clipboard.writeText(text);
+        showStatus('✅ Данные скопированы!', 'success');
+    };
+    
+    window.installWallet = function() {
+        window.open("https://ton.org/wallets", "_blank");
+    };
+    
+    window.contactSupport = function() {
+        if (tg) {
+            tg.openTelegramLink("https://t.me/AntonDrogovoz");
+        } else {
+            window.open("https://t.me/AntonDrogovoz", "_blank");
+        }
+    };
+    
+    async function checkPayment(comment, attempt = 1) {
+        if (isPaying) return;
+        isPaying = true;
+        
+        const maxAttempts = 20;
+        
+        if (attempt > maxAttempts) {
+            showStatus('⚠️ Платёж не найден. Проверьте комментарий и сумму.', 'error');
+            showProgress(0);
+            isPaying = false;
+            return;
+        }
+        
+        const percent = (attempt / maxAttempts) * 100;
+        showProgress(percent, `⏳ Проверка платежа... (${attempt}/${maxAttempts})`);
+        
+        try {
+            const resp = await fetch(BACKEND_URL, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ comment: comment })
+            });
+            
+            const data = await resp.json();
+            
+            if (data.paid) {
+                showProgress(100);
+                showStatus('✅ Оплата подтверждена! PDF отправлен в Telegram!', 'success');
+                
+                document.getElementById("payBtn").disabled = true;
+                document.getElementById("paymentOptions").style.display = "none";
+                
+                if (tg) {
+                    tg.showPopup({
+                        title: '🎉 Успешно!',
+                        message: 'PDF с гайдом отправлен в Telegram. Проверьте чат с ботом!',
+                        buttons: [{type: 'close'}]
+                    });
+                }
+                
+                isPaying = false;
+                return;
             }
-            data = {
-                'chat_id': chat_id,
-                'caption': caption
-            }
             
-            response = requests.post(url, data=data, files=files, timeout=30)
-            result = response.json()
+            setTimeout(() => {
+                isPaying = false;
+                checkPayment(comment, attempt + 1);
+            }, 5000);
             
-            if result.get('ok'):
-                logger.info(f"✅ PDF отправлен через HTTP")
-                return True
-            else:
-                logger.error(f"❌ Ошибка Telegram API: {result}")
-                return False
-                
-    except Exception as e:
-        logger.error(f"❌ Ошибка отправки через HTTP: {e}")
-        return False
-
-@app.route("/")
-def home():
-    return "✅ Backend работает"
-
-@app.route("/check_payment", methods=["POST"])
-def check_payment():
-    data = request.json
-    comment = data.get("comment", "")
-    
-    logger.info(f"="*50)
-    logger.info(f"🔍 ПРОВЕРКА ПЛАТЕЖА: {comment}")
-    
-    # Проверяем, не был ли уже обработан этот пользователь за последние 5 минут
-    # (чтобы не спамить PDF при каждом открытии)
-    user_id = 0
-    try:
-        user_id = int(comment.split("_")[1])
-    except:
-        pass
-    
-    if not os.path.exists(PDF_FILENAME):
-        logger.error(f"❌ PDF НЕ НАЙДЕН!")
-        return jsonify({"paid": False, "error": "PDF not found"})
-
-    try:
-        url = f"https://toncenter.com/api/v2/getTransactions?address={YOUR_WALLET}&limit=20"
-        response = requests.get(url, timeout=10)
-        data = response.json()
-
-        if "result" not in data:
-            return jsonify({"paid": False, "error": "API error"})
-
-        # Ищем НОВУЮ транзакцию (которую ещё не обрабатывали)
-        for tx in data["result"]:
-            tx_hash = tx["transaction_id"]["hash"]
+        } catch(e) {
+            console.error("Ошибка:", e);
+            showStatus('⚠️ Ошибка соединения. Повтор...', 'error');
             
-            # Пропускаем уже обработанные
-            if tx_hash in processed:
-                logger.info(f"⏭️ TX уже обработан: {tx_hash}")
-                continue
-                
-            in_msg = tx.get("in_msg", {})
-            value_nanoton = int(in_msg.get("value", 0))
-            tx_comment = in_msg.get("message", "")
-            
-            # Проверяем комментарий и сумму
-            if value_nanoton >= MIN_VALUE_NANOTON and tx_comment == comment:
-                logger.info(f"✅ НАЙДЕНА НОВАЯ ТРАНЗАКЦИЯ!")
-                
-                try:
-                    user_id = int(comment.split("_")[1])
-                    
-                    success = send_pdf_via_http(
-                        chat_id=user_id,
-                        pdf_path=PDF_FILENAME,
-                        caption="✅ Оплата получена! Вот твой гайд 🚀"
-                    )
-                    
-                    if success:
-                        logger.info(f"✅ PDF отправлен пользователю {user_id}")
-                        # Сохраняем транзакцию как обработанную
-                        processed.add(tx_hash)
-                        save_processed(tx_hash)
-                        return jsonify({"paid": True})
-                    else:
-                        return jsonify({"paid": False, "error": "Failed to send PDF"})
-                    
-                except Exception as e:
-                    logger.error(f"❌ ОШИБКА: {e}")
-                    return jsonify({"paid": False, "error": str(e)})
-
-    except Exception as e:
-        logger.error(f"❌ ОШИБКА: {e}")
-        return jsonify({"paid": False, "error": str(e)})
+            setTimeout(() => {
+                isPaying = false;
+                checkPayment(comment, attempt + 1);
+            }, 5000);
+        }
+    }
     
-    logger.info("❌ НОВЫХ подходящих транзакций не найдено")
-    return jsonify({"paid": False})
-
-@app.route("/test", methods=["GET"])
-def test():
-    return jsonify({
-        "status": "ok", 
-        "pdf_exists": os.path.exists(PDF_FILENAME),
-        "processed_count": len(processed)
-    })
-
-@app.route("/send_test_pdf", methods=["GET"])
-def send_test_pdf():
-    """Тестовая отправка PDF напрямую"""
-    try:
-        test_user_id = 364711487
-        
-        if not os.path.exists(PDF_FILENAME):
-            return jsonify({"error": "PDF not found"})
-        
-        success = send_pdf_via_http(
-            chat_id=test_user_id,
-            pdf_path=PDF_FILENAME,
-            caption="📄 Тестовая отправка PDF"
-        )
-        
-        if success:
-            return jsonify({"success": True, "message": "PDF sent"})
-        else:
-            return jsonify({"error": "Failed to send PDF"})
-        
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-@app.route("/logs", methods=["GET"])
-def view_logs():
-    try:
-        if os.path.exists('bot_debug.log'):
-            with open('bot_debug.log', 'r', encoding='utf-8') as f:
-                lines = f.readlines()[-50:]
-                return jsonify({"logs": lines})
-        return jsonify({"logs": []})
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
-@app.route("/reset", methods=["GET"])
-def reset_processed():
-    """Сброс списка обработанных транзакций (только для отладки)"""
-    global processed
-    processed = set()
-    if os.path.exists(PROCESSED_FILE):
-        os.remove(PROCESSED_FILE)
-    logger.info("🔄 Список обработанных транзакций сброшен")
-    return jsonify({"status": "reset"})
-
-if __name__ == "__main__":
-    logger.info(f"🚀 СЕРВЕР ЗАПУЩЕН! Обработано транзакций: {len(processed)}")
-    app.run(host="0.0.0.0", port=3000)
+    document.getElementById("payBtn").onclick = function() {
+        if (userId === 0) {
+            showStatus('⚠️ Ошибка: не удалось определить пользователя', 'error');
+            return;
+        }
+        showPaymentOptions();
+    };
+    
+    console.log("👤 User ID:", userId);
+    console.log("🔗 Backend URL:", BACKEND_URL);
+});
+</script>
+</body>
+</html>
