@@ -139,6 +139,16 @@ async function checkPayment(comment, attempt=1){
     }
 }
 
+  <div id="support" style="margin-top:20px;">
+  <button onclick="contactSupport()">💬 Написать в поддержку</button>
+</div>
+
+<script>
+function contactSupport(){
+    // Здесь вставь свой Telegram-никнейм без @
+    const supportUsername = "drogovoz84"; 
+    const telegramLink = `https://t.me/${supportUsername}`;
+    window.open(telegramLink, "_blank");
 // ====== Кнопка “Оплатить” теперь только показывает варианты ======
 document.getElementById("payBtn").onclick = showPaymentOptions;
 
