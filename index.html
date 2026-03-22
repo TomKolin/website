@@ -73,17 +73,21 @@ function openWallet(){
     const comment = `passiveguide_${userId}`;
     const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
 
-    // безопасный fallback для мобильных
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    // Автокопирование всех данных в буфер обмена
+    const copyText = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 5 TON`;
+    navigator.clipboard.writeText(copyText).then(()=>{
+        console.log("Данные скопированы в буфер обмена");
+    });
 
-    if(isMobile){
-        alert("⚠️ С мобильного устройства откройте ваш TON Wallet и вставьте данные вручную:\n\n" +
-              `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 5 TON`);
-        return;
-    }
-
-    // для десктопа открываем стандартно
+    // Пытаемся открыть TON Wallet через ссылку
     window.open(tonLink, "_blank");
+
+    // Fallback через 1 секунду: если кошелек не открылся, показываем инструкцию
+    setTimeout(()=>{
+        alert("Если TON Wallet не открылся автоматически, вставьте данные из буфера обмена в ваш кошелек.");
+    }, 1000);
+
+    // Проверка оплаты через 3 секунды
     setTimeout(()=>checkPayment(comment),3000);
 }
 
