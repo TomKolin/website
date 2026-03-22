@@ -22,7 +22,6 @@ input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;
 </style>
 </head>
 <body>
-
 <h1>🚀 Crypto Passive 2026</h1>
 <p>Полный гайд + калькулятор пассивного дохода</p>
 
@@ -37,7 +36,6 @@ input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;
 <div id="result"></div>
 </div>
 
-<!-- ✅ ТУТ ПОМЕНЯЛ -->
 <button id="payBtn">💰 Оплатить 0.1 TON через Telegram Wallet</button>
 
 <div id="paymentOptions">
@@ -59,10 +57,7 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 const userId = tg.initDataUnsafe?.user?.id || 0;
 const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
-
-// ✅ ТУТ ПОМЕНЯЛ (5 TON)
-const amountTON = 100000000;
-
+const amountTON = 100000000; // 0.1 TON в нанотонах
 const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
 
 // ====== Калькулятор ======
@@ -83,7 +78,6 @@ function openWallet(){
     const comment = `passiveguide_${userId}`;
     const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
 
-    // ✅ ТУТ ПОМЕНЯЛ
     const copyText = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`;
     navigator.clipboard.writeText(copyText);
 
@@ -98,10 +92,7 @@ function openWallet(){
 
 function copyData(){
     const comment = `passiveguide_${userId}`;
-
-    // ✅ ТУТ ПОМЕНЯЛ
     const text = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`;
-
     navigator.clipboard.writeText(text);
     alert("Данные скопированы! Вставь их в кошелёк.");
 }
