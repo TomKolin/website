@@ -2,130 +2,385 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Crypto Passive 2026</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-body {font-family:Arial;background:#0f0f0f;color:#fff;text-align:center;padding:20px;}
-h1 {color:#00ff88;}
-button {background:#00ff88;color:#000;padding:15px 40px;font-size:20px;border:none;border-radius:10px;cursor:pointer;margin:20px;transition:0.3s, transform 0.2s;}
-button:disabled {background:#555;color:#ccc;cursor:default;}
-button:hover:not(:disabled){transform:scale(1.05);}
-input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;font-size:16px;}
-#status, #progress {margin-top:20px;font-size:18px;color:#00ff88;}
-#progress-bar {height:10px;background:#333;border-radius:5px;margin:10px auto;width:80%;}
-#progress-fill {height:10px;background:#00ff88;width:0%;border-radius:5px;transition:width 0.5s;}
-#result {margin:20px;font-size:22px;color:#00ff88;}
-.calc {background:#1a1a1a;padding:20px;border-radius:15px;max-width:500px;margin:20px auto;}
-#paymentOptions {display:none; margin-top:20px;}
-#support {margin-top:20px;}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%);
+    color: #fff;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+h1 {
+    color: #00ff88;
+    font-size: 28px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.calc {
+    background: rgba(26, 26, 26, 0.9);
+    backdrop-filter: blur(10px);
+    padding: 24px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.calc h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #00ff88;
+}
+
+input, select {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    border-radius: 12px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #00ff88;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+button {
+    background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+    color: #000;
+    padding: 14px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+button:disabled {
+    background: #555;
+    color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+button:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 255, 136, 0.1);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.result strong {
+    color: #00ff88;
+    font-size: 24px;
+}
+
+.payment-btn {
+    background: linear-gradient(135deg, #ff8800 0%, #cc6600 100%);
+    margin: 20px 0;
+}
+
+.payment-options {
+    display: none;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.payment-options button {
+    background: #2a2a2a;
+    color: #fff;
+    margin: 5px 0;
+}
+
+.payment-options button:active {
+    background: #3a3a3a;
+}
+
+.status {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.status.success {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    border: 1px solid #00ff88;
+}
+
+.status.error {
+    background: rgba(255, 68, 68, 0.2);
+    color: #ff4444;
+    border: 1px solid #ff4444;
+}
+
+.status.info {
+    background: rgba(255, 136, 0, 0.2);
+    color: #ff8800;
+    border: 1px solid #ff8800;
+}
+
+.progress-bar {
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    margin: 15px auto;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff88, #00cc66);
+    width: 0%;
+    transition: width 0.3s;
+    border-radius: 3px;
+}
+
+.support-btn {
+    background: transparent;
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    margin-top: 20px;
+}
+
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    border-top-color: #00ff88;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    button {
+        padding: 12px 20px;
+    }
+}
 </style>
 </head>
 <body>
+<div class="container">
+    <h1>
+        <span>🚀</span>
+        Crypto Passive 2026
+        <span>💎</span>
+    </h1>
+    <div class="subtitle">Полный гайд + калькулятор пассивного дохода</div>
 
-<h1>🚀 Crypto Passive 2026</h1>
-<p>Полный гайд + калькулятор пассивного дохода</p>
+    <div class="calc">
+        <h2>📊 Калькулятор дохода</h2>
+        <input type="number" id="amount" value="1000" placeholder="Введите сумму в $" step="100">
+        <select id="platform">
+            <option value="12">💰 MEXC/Bybit (~12% годовых)</option>
+            <option value="5">💎 TON Staking (~5% годовых)</option>
+            <option value="8">📈 Binance Earn (~8% годовых)</option>
+        </select>
+        <button onclick="calculate()">📈 Рассчитать доход</button>
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
 
-<div class="calc">
-<h2>Сколько заработаешь пассивно?</h2>
-<input type="number" id="amount" value="1000" placeholder="Введите сумму $">
-<select id="platform">
-  <option value="12">MEXC/Bybit (~12%)</option>
-  <option value="5">TON Staking (~5%)</option>
-</select>
-<button onclick="calculate()">Рассчитать</button>
-<div id="result"></div>
-</div>
+    <button id="payBtn" class="payment-btn">💰 Оплатить 0.1 TON</button>
 
-<button id="payBtn">💰 Оплатить 0.1 TON через Telegram Wallet</button>
+    <div id="paymentOptions" class="payment-options">
+        <button onclick="openWallet()">💎 Открыть TON Wallet</button>
+        <button onclick="copyData()">📋 Скопировать реквизиты</button>
+        <button onclick="installWallet()">📲 Установить кошелёк</button>
+    </div>
 
-<div id="paymentOptions">
-  <button onclick="openWallet()">💎 Открыть кошелёк</button><br>
-  <button onclick="copyData()">📋 Скопировать адрес</button><br>
-  <button onclick="installWallet()">📲 Установить кошелёк</button>
-</div>
+    <div id="status"></div>
+    <div class="progress-bar" id="progressBar" style="display: none;">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
 
-<div id="status"></div>
-<div id="progress"></div>
-<div id="progress-bar"><div id="progress-fill"></div></div>
-
-<div id="support">
-  <button onclick="contactSupport()">💬 Написать в поддержку</button>
+    <button id="supportBtn" class="support-btn" onclick="contactSupport()">💬 Поддержка</button>
 </div>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
-const userId = tg.initDataUnsafe?.user?.id || 0;
-const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
-const amountTON = 100000000; // 0.1 TON в нанотонах
+tg.expand(); // Разворачиваем на весь экран
 
-// ====== ПРАВИЛЬНЫЙ URL БЭКЕНДА ======
+const userId = tg.initDataUnsafe?.user?.id || 0;
+const userFirstName = tg.initDataUnsafe?.user?.first_name || 'Гость';
+const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
+const amountTON = 100000000; // 0.1 TON
+
+// URL бэкенда (обнови при необходимости)
 const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
 
-function calculate(){
+let isPaying = false;
+
+// Приветствие
+tg.showAlert(`Привет, ${userFirstName}! 👋\n\nНажми на кнопку оплаты, чтобы получить гайд по пассивному доходу.`);
+
+function calculate() {
     const amount = parseFloat(document.getElementById('amount').value);
     const apy = parseFloat(document.getElementById('platform').value);
+    
+    if (isNaN(amount) || amount <= 0) {
+        showStatus('Введите корректную сумму', 'error');
+        return;
+    }
+    
     const monthly = (amount * apy / 100 / 12).toFixed(2);
-    document.getElementById('result').innerHTML = `Ежемесячно: <strong>${monthly} $</strong>`;
+    const yearly = (amount * apy / 100).toFixed(2);
+    
+    const resultDiv = document.getElementById('result');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `
+        📅 <strong>Ежемесячно:</strong> ${monthly} $<br>
+        📆 <strong>Годовой доход:</strong> ${yearly} $<br>
+        📊 <strong>Доходность:</strong> ${apy}% годовых
+    `;
 }
 
-function showPaymentOptions(){
-    document.getElementById("paymentOptions").style.display = "block";
+function showStatus(message, type = 'info') {
+    const statusDiv = document.getElementById('status');
+    statusDiv.className = `status ${type}`;
+    statusDiv.innerHTML = message;
+    
+    if (type !== 'error') {
+        setTimeout(() => {
+            if (statusDiv.innerHTML === message) {
+                statusDiv.style.display = 'none';
+                statusDiv.className = 'status';
+            }
+        }, 5000);
+    }
 }
 
-function openWallet(){
+function showProgress(percent, text) {
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    
+    progressBar.style.display = 'block';
+    progressFill.style.width = `${percent}%`;
+    
+    if (text) {
+        showStatus(text, 'info');
+    }
+    
+    if (percent >= 100) {
+        setTimeout(() => {
+            progressBar.style.display = 'none';
+        }, 1000);
+    }
+}
+
+function showPaymentOptions() {
+    document.getElementById("paymentOptions").style.display = "flex";
+    tg.MainButton.setText('Продолжить оплату').show();
+}
+
+function openWallet() {
     const comment = `passiveguide_${userId}`;
     const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
-    const copyText = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`;
-    navigator.clipboard.writeText(copyText);
     
+    navigator.clipboard.writeText(`Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`);
+    
+    // Пробуем открыть кошелёк
     window.open(tonLink, "_blank");
     
+    showStatus('💰 Кошелёк открывается...\nДанные скопированы в буфер обмена', 'info');
+    
     setTimeout(() => {
-        alert("Если TON Wallet не открылся автоматически, вставьте данные из буфера обмена в ваш кошелек.");
-    }, 1000);
+        tg.showPopup({
+            title: '💎 Оплата',
+            message: 'Если кошелёк не открылся автоматически:\n1. Вставьте данные из буфера\n2. Укажите комментарий\n3. Отправьте 0.1 TON',
+            buttons: [{type: 'ok'}]
+        });
+    }, 2000);
     
     setTimeout(() => checkPayment(comment), 3000);
 }
 
-function copyData(){
+function copyData() {
     const comment = `passiveguide_${userId}`;
-    const text = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`;
+    const text = `💎 Адрес: ${address}\n📝 Комментарий: ${comment}\n💰 Сумма: 0.1 TON\n\n⚠️ Обязательно укажите комментарий!`;
+    
     navigator.clipboard.writeText(text);
-    alert("Данные скопированы! Вставь их в кошелёк.");
+    showStatus('✅ Данные скопированы! Вставьте их в кошелёк.', 'success');
 }
 
-function installWallet(){
+function installWallet() {
     window.open("https://ton.org/wallets", "_blank");
 }
 
-function contactSupport(){
-    const supportUsername = "AntonDrogovoz";
-    window.open(`https://t.me/${supportUsername}`, "_blank");
+function contactSupport() {
+    tg.openTelegramLink("https://t.me/AntonDrogovoz");
 }
 
-async function checkPayment(comment, attempt = 1){
-    const statusDiv = document.getElementById("status");
-    const progressDiv = document.getElementById("progress");
-    const progressFill = document.getElementById("progress-fill");
-    const payBtn = document.getElementById("payBtn");
+async function checkPayment(comment, attempt = 1) {
+    if (isPaying) return;
+    isPaying = true;
     
-    if(attempt > 20){
-        statusDiv.innerHTML = "⚠️ Платеж не найден. Попробуйте ещё раз или обратитесь в поддержку.";
-        progressDiv.innerHTML = "";
-        progressFill.style.width = '0%';
-        payBtn.disabled = false;
+    const maxAttempts = 20;
+    
+    if (attempt > maxAttempts) {
+        showStatus('⚠️ Платёж не найден. Проверьте:\n• Правильность комментария\n• Сумму 0.1 TON\n• Обратитесь в поддержку', 'error');
+        showProgress(0);
+        isPaying = false;
         return;
     }
     
-    progressDiv.innerHTML = `⏳ Проверка оплаты... попытка ${attempt}/20`;
-    progressFill.style.width = `${(attempt / 20) * 100}%`;
+    const percent = (attempt / maxAttempts) * 100;
+    showProgress(percent, `⏳ Проверка платежа... (${attempt}/${maxAttempts})`);
     
     try {
-        console.log(`📡 Запрос к: ${BACKEND_URL}`);
-        console.log(`💬 Комментарий: ${comment}`);
-        
         const resp = await fetch(BACKEND_URL, {
             method: "POST",
             headers: {"Content-Type": "application/json"},
@@ -133,27 +388,66 @@ async function checkPayment(comment, attempt = 1){
         });
         
         const data = await resp.json();
-        console.log("✅ Ответ:", data);
         
-        if(data.paid){
-            statusDiv.innerHTML = "✅ Оплата подтверждена! PDF отправлен в Telegram. Проверьте чат с ботом.";
-            progressDiv.innerHTML = "";
-            progressFill.style.width = '100%';
-            payBtn.disabled = true;
+        if (data.paid) {
+            showProgress(100);
+            showStatus('✅ Оплата подтверждена! PDF отправлен в Telegram. Проверьте чат с ботом!', 'success');
+            
+            document.getElementById("payBtn").disabled = true;
             document.getElementById("paymentOptions").style.display = "none";
-        } else {
-            setTimeout(() => checkPayment(comment, attempt + 1), 5000);
+            
+            tg.MainButton.hide();
+            tg.close(); // Предлагаем закрыть мини-приложение
+            
+            setTimeout(() => {
+                tg.showPopup({
+                    title: '🎉 Успешно!',
+                    message: 'PDF с гайдом отправлен в Telegram. Проверьте чат с ботом!',
+                    buttons: [{type: 'close'}]
+                });
+            }, 1000);
+            
+            isPaying = false;
+            return;
         }
-    } catch(e){
-        console.error("❌ Ошибка:", e);
-        progressDiv.innerHTML = "⚠️ Ошибка соединения с сервером. Повтор через 5 секунд...";
-        setTimeout(() => checkPayment(comment, attempt + 1), 5000);
+        
+        setTimeout(() => {
+            isPaying = false;
+            checkPayment(comment, attempt + 1);
+        }, 5000);
+        
+    } catch(e) {
+        console.error("Ошибка:", e);
+        showStatus('⚠️ Ошибка соединения. Повтор через 5 секунд...', 'error');
+        
+        setTimeout(() => {
+            isPaying = false;
+            checkPayment(comment, attempt + 1);
+        }, 5000);
     }
 }
 
-document.getElementById("payBtn").onclick = showPaymentOptions;
+document.getElementById("payBtn").onclick = () => {
+    if (userId === 0) {
+        tg.showPopup({
+            title: '⚠️ Ошибка',
+            message: 'Не удалось определить пользователя. Убедитесь, что вы открыли приложение через Telegram.',
+            buttons: [{type: 'close'}]
+        });
+        return;
+    }
+    showPaymentOptions();
+};
 
+// Настройка главной кнопки Telegram
+tg.MainButton.onClick(() => {
+    openWallet();
+    tg.MainButton.hide();
+});
+
+// Логирование для отладки
 console.log("👤 User ID:", userId);
+console.log("👤 User Name:", userFirstName);
 console.log("🔗 Backend URL:", BACKEND_URL);
 </script>
 </body>
