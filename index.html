@@ -43,7 +43,7 @@
     function pay() {
       const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";  // ← замени!
       const comment = `passiveguide_${userId}`;
-      const deepLink = `ton://transfer/${address}?amount=5&text=${encodeURIComponent(comment)}`;
+      const deepLink = `ton://transfer/${address}?amount=5000000000&text=${encodeURIComponent(comment)}`;
       
       alert(`Отправь ровно 5 TON на:\n${address}\n\nКомментарий: ${comment}\n\n(ссылка ниже откроет кошелёк)`);
       window.open(deepLink, '_blank');
