@@ -21,7 +21,7 @@ button:hover:not(:disabled){transform:scale(1.05);}
 <p>Полный гайд + калькулятор пассивного дохода</p>
 <button id="payBtn">💰 Оплатить 5 TON через Telegram Wallet</button>
 <div id="status"></div>
-<div id="progress"> </div>
+<div id="progress"></div>
 <div id="progress-bar"><div id="progress-fill"></div></div>
 
 <script>
@@ -31,8 +31,8 @@ const userId = tg.initDataUnsafe?.user?.id || 0;
 const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
 const amount = 5000000000;
 
-// Вставь сюда реальный публичный URL твоего Replit
-const BACKEND_URL = "https://<твой-repl-username>.<repl-name>.repl.co/check_payment";
+// === Используем правильный публичный URL Replit для проверки оплаты ===
+const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
 
 async function checkPayment(comment, attempt=1){
     const statusDiv = document.getElementById("status");
