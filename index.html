@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Passive 2026</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {font-family:Arial;background:#0f0f0f;color:#fff;text-align:center;padding:20px;}
+    h1 {color:#00ff88;} .calc {background:#1a1a1a;padding:20px;border-radius:15px;max-width:500px;margin:20px auto;}
+    button {background:#00ff88;color:#000;padding:15px 40px;font-size:20px;border:none;border-radius:10px;cursor:pointer;margin:10px;}
+  </style>
+</head>
+<body>
+  <h1>🚀 Crypto Passive 2026</h1>
+  <p>Калькулятор + полный гайд за 5 TON</p>
+
+  <div class="calc">
+    <h2>Сколько заработаешь пассивно?</h2>
+    <input type="number" id="amount" value="1000" style="width:80%;padding:10px;">
+    <select id="platform" style="width:80%;padding:10px;">
+      <option value="12">MEXC/Bybit (~12%)</option>
+      <option value="5">TON Staking (~5%)</option>
+    </select>
+    <button onclick="calculate()">Рассчитать</button>
+    <div id="result" style="margin:20px;font-size:22px;color:#00ff88;"></div>
+  </div>
+
+  <button onclick="pay()">Оплатить 5 TON и получить гайд</button>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    const userId = tg.initDataUnsafe?.user?.id || 0;
+
+    function calculate() {
+      const amount = parseFloat(document.getElementById('amount').value);
+      const apy = parseFloat(document.getElementById('platform').value);
+      const monthly = (amount * apy / 100 / 12).toFixed(2);
+      document.getElementById('result').innerHTML = `Ежемесячно: <strong>${monthly} $</strong>`;
+    }
+
+    function pay() {
+      const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";  // ← замени!
+      const comment = `passiveguide_${userId}`;
+      const deepLink = `ton://transfer/${address}?amount=5&text=${encodeURIComponent(comment)}`;
+      
+      alert(`Отправь ровно 5 TON на:\n${address}\n\nКомментарий: ${comment}\n\n(ссылка ниже откроет кошелёк)`);
+      window.open(deepLink, '_blank');
+    }
+  </script>
+</body>
+</html>
