@@ -1,101 +1,74 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Crypto Passive 2026</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body {font-family:Arial;background:#0f0f0f;color:#fff;text-align:center;padding:20px;}
-    h1 {color:#00ff88;} .calc {background:#1a1a1a;padding:20px;border-radius:15px;max-width:500px;margin:20px auto;}
-    button {background:#00ff88;color:#000;padding:15px 40px;font-size:20px;border:none;border-radius:10px;cursor:pointer;margin:10px;}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Passive 2026</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+body {font-family:Arial;background:#0f0f0f;color:#fff;text-align:center;padding:20px;}
+h1 {color:#00ff88;}
+button {background:#00ff88;color:#000;padding:15px 40px;font-size:20px;border:none;border-radius:10px;cursor:pointer;margin:20px;transition:0.3s;}
+button:disabled {background:#555;color:#ccc;cursor:default;}
+#status, #progress {margin-top:20px;font-size:18px;color:#00ff88;}
+</style>
 </head>
 <body>
-  <h1>🚀 Crypto Passive 2026</h1>
-  <p>Калькулятор + полный гайд за 5 TON</p>
+<h1>🚀 Crypto Passive 2026</h1>
+<p>Полный гайд + калькулятор пассивного дохода</p>
+<button id="payBtn">💰 Оплатить 5 TON через Telegram Wallet</button>
+<div id="status"></div>
+<div id="progress"></div>
 
-  <div class="calc">
-    <h2>Сколько заработаешь пассивно?</h2>
-    <input type="number" id="amount" value="1000" style="width:80%;padding:10px;">
-    <select id="platform" style="width:80%;padding:10px;">
-      <option value="12">MEXC/Bybit (~12%)</option>
-      <option value="5">TON Staking (~5%)</option>
-    </select>
-    <button onclick="calculate()">Рассчитать</button>
-    <div id="result" style="margin:20px;font-size:22px;color:#00ff88;"></div>
-  </div>
+<script>
+const tg = window.Telegram.WebApp;
+tg.ready();
+const userId = tg.initDataUnsafe?.user?.id || 0;
+const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
+const amount = 5000000000;
 
-  <button onclick="showPaymentOptions()">Оплатить 5 TON</button>
-
-<div id="paymentOptions" style="display:none; margin-top:20px;">
-  <button onclick="openWallet()">💎 Открыть кошелёк</button><br>
-  <button onclick="copyData()">📋 Скопировать адрес</button><br>
-  <button onclick="installWallet()">📲 Установить кошелёк</button>
-</div>
-  
-  <script>
-    function showPaymentOptions() {
-  document.getElementById("paymentOptions").style.display = "block";
-}
-    function openWallet() {
-  if (!userId) {
-    alert("Открой приложение внутри Telegram!");
-    return;
-  }
-
-  const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
-  const comment = `passiveguide_${userId}`;
-  const amount = 5000000000;
-
-  const tonLink = `ton://transfer/${address}?amount=${amount}&text=${encodeURIComponent(comment)}`;
-
-  window.open(tonLink, "_blank");
-}
-    function copyData() {
-  const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
-  const comment = `passiveguide_${userId}`;
-
-  const text = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 5 TON`;
-
-  navigator.clipboard.writeText(text);
-
-  alert("Данные скопированы! Вставь их в кошелёк.");
-}
-    function installWallet() {
-  window.open("https://ton.org/wallets", "_blank");
-}
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    const userId = tg.initDataUnsafe?.user?.id || 0;
-
-    function calculate() {
-      const amount = parseFloat(document.getElementById('amount').value);
-      const apy = parseFloat(document.getElementById('platform').value);
-      const monthly = (amount * apy / 100 / 12).toFixed(2);
-      document.getElementById('result').innerHTML = `Ежемесячно: <strong>${monthly} $</strong>`;
+async function checkPayment(comment, attempt=1){
+    const statusDiv = document.getElementById("status");
+    const progressDiv = document.getElementById("progress");
+    if(attempt>20){
+        statusDiv.innerHTML = "⚠️ Платеж не найден. Попробуйте ещё раз.";
+        progressDiv.innerHTML = "";
+        document.getElementById("payBtn").disabled = false;
+        return;
     }
-
-   function pay() {
-  if (!userId) {
-    alert("Открой приложение внутри Telegram!");
-    return;
-  }
-
-  const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
-  const comment = `passiveguide_${userId}`;
-  const amount = 5000000000;
-
-  const tonLink = `ton://transfer/${address}?amount=${amount}&text=${encodeURIComponent(comment)}`;
-
-  // просто открываем кошелек
-  window.open(tonLink, "_blank");
-
-  // fallback БЕЗ document.hidden
-  setTimeout(() => {
-    window.open("https://ton.org/wallets", "_blank");
-  }, 2000);
+    progressDiv.innerHTML = `⏳ Проверка оплаты... попытка ${attempt}/20`;
+    try {
+        const resp = await fetch("https://cryptopassive-bot.drogovoz84.repl.co/check_payment", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({comment: comment})
+        });
+        const data = await resp.json();
+        if(data.paid){
+            statusDiv.innerHTML = "✅ Оплата подтверждена! PDF отправлен в Telegram.";
+            progressDiv.innerHTML = "";
+            document.getElementById("payBtn").disabled = true;
+        } else {
+            setTimeout(()=>checkPayment(comment, attempt+1), 5000);
+        }
+    } catch(e){
+        console.error(e);
+        progressDiv.innerHTML = "⚠️ Ошибка при проверке оплаты. Повтор через 5 секунд...";
+        setTimeout(()=>checkPayment(comment, attempt+1), 5000);
+    }
 }
-  </script>
+
+document.getElementById("payBtn").onclick = () => {
+    if(!userId){
+        alert("Открой приложение внутри Telegram!");
+        return;
+    }
+    document.getElementById("payBtn").disabled = true;
+    const comment = `passiveguide_${userId}`;
+    const tonLink = `ton://transfer/${address}?amount=${amount}&text=${encodeURIComponent(comment)}`;
+    window.location.href = tonLink;
+    setTimeout(()=>checkPayment(comment),3000);
+};
+</script>
 </body>
 </html>
