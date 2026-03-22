@@ -72,7 +72,9 @@ function showPaymentOptions(){
 function openWallet(){
     const comment = `passiveguide_${userId}`;
     const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
-    window.location.href = tonLink;
+    // открытие кошелька в новом окне
+    window.open(tonLink, "_blank");
+    // запуск проверки оплаты через 3 секунды
     setTimeout(()=>checkPayment(comment),3000);
 }
 
