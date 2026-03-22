@@ -26,8 +26,14 @@
     <div id="result" style="margin:20px;font-size:22px;color:#00ff88;"></div>
   </div>
 
-  <button onclick="pay()">Оплатить 5 TON и получить гайд</button>
+  <button onclick="showPaymentOptions()">Оплатить 5 TON</button>
 
+<div id="paymentOptions" style="display:none; margin-top:20px;">
+  <button onclick="openWallet()">💎 Открыть кошелёк</button><br>
+  <button onclick="copyData()">📋 Скопировать адрес</button><br>
+  <button onclick="installWallet()">📲 Установить кошелёк</button>
+</div>
+  
   <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
