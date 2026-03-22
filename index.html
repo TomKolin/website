@@ -40,25 +40,26 @@
       document.getElementById('result').innerHTML = `Ежемесячно: <strong>${monthly} $</strong>`;
     }
 
-    function pay() {
+   function pay() {
+  if (!userId) {
+    alert("Открой приложение внутри Telegram!");
+    return;
+  }
+
   const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
   const comment = `passiveguide_${userId}`;
-  const amount = 5000000000; // 5 TON
+  const amount = 5000000000;
 
   const tonLink = `ton://transfer/${address}?amount=${amount}&text=${encodeURIComponent(comment)}`;
-  const fallback = "https://ton.org/wallets";
 
-  // пробуем открыть кошелек
-  window.location.href = tonLink;
+  // просто открываем кошелек
+  window.open(tonLink, "_blank");
 
-  // если не открылся — отправляем на установку
+  // fallback БЕЗ document.hidden
   setTimeout(() => {
-    if (!document.hidden) {
-      alert("У тебя не установлен кошелек. Сейчас откроется страница установки.");
-      window.location.href = fallback;
-    }
-  }, 1500);
-    }
+    window.open("https://ton.org/wallets", "_blank");
+  }, 2000);
+}
   </script>
 </body>
 </html>
