@@ -17,6 +17,7 @@ input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;
 #progress-fill {height:10px;background:#00ff88;width:0%;border-radius:5px;transition:width 0.5s;}
 #result {margin:20px;font-size:22px;color:#00ff88;}
 .calc {background:#1a1a1a;padding:20px;border-radius:15px;max-width:500px;margin:20px auto;}
+#paymentOptions {display:none; margin-top:20px;}
 </style>
 </head>
 <body>
@@ -35,6 +36,13 @@ input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;
 </div>
 
 <button id="payBtn">💰 Оплатить 5 TON через Telegram Wallet</button>
+
+<div id="paymentOptions">
+  <button onclick="openWallet()">💎 Открыть кошелёк</button><br>
+  <button onclick="copyData()">📋 Скопировать адрес</button><br>
+  <button onclick="installWallet()">📲 Установить кошелёк</button>
+</div>
+
 <div id="status"></div>
 <div id="progress"></div>
 <div id="progress-bar"><div id="progress-fill"></div></div>
@@ -55,7 +63,31 @@ function calculate(){
     document.getElementById('result').innerHTML = `Ежемесячно: <strong>${monthly} $</strong>`;
 }
 
-// ====== WebApp оплата ======
+// ====== Показ блока оплаты ======
+function showPaymentOptions(){
+    document.getElementById("paymentOptions").style.display = "block";
+}
+
+// ====== Действия кнопок оплаты ======
+function openWallet(){
+    const comment = `passiveguide_${userId}`;
+    const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
+    window.location.href = tonLink;
+    setTimeout(()=>checkPayment(comment),3000);
+}
+
+function copyData(){
+    const comment = `passiveguide_${userId}`;
+    const text = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 5 TON`;
+    navigator.clipboard.writeText(text);
+    alert("Данные скопированы! Вставь их в кошелёк.");
+}
+
+function installWallet(){
+    window.open("https://ton.org/wallets", "_blank");
+}
+
+// ====== Проверка оплаты ======
 async function checkPayment(comment, attempt=1){
     const statusDiv = document.getElementById("status");
     const progressDiv = document.getElementById("progress");
@@ -92,17 +124,9 @@ async function checkPayment(comment, attempt=1){
     }
 }
 
-document.getElementById("payBtn").onclick = () => {
-    if(!userId){
-        alert("Открой приложение внутри Telegram!");
-        return;
-    }
-    document.getElementById("payBtn").disabled = true;
-    const comment = `passiveguide_${userId}`;
-    const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
-    window.location.href = tonLink;
-    setTimeout(()=>checkPayment(comment),3000);
-};
+// ====== Кнопка “Оплатить” теперь только показывает варианты ======
+document.getElementById("payBtn").onclick = showPaymentOptions;
+
 </script>
 </body>
 </html>
