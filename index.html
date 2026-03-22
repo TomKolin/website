@@ -22,6 +22,7 @@ input, select {width:80%;padding:10px;margin:10px;border-radius:8px;border:none;
 </style>
 </head>
 <body>
+
 <h1>🚀 Crypto Passive 2026</h1>
 <p>Полный гайд + калькулятор пассивного дохода</p>
 
@@ -57,8 +58,8 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 const userId = tg.initDataUnsafe?.user?.id || 0;
 const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
-const amountTON = 100000000; // 0.1 TON в нанотонах
-const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
+const amountTON = 100000000; // 0.1 TON
+const BACKEND_URL = "https://ТВОЙ-REPLIT-URL/check_payment";
 
 // ====== Калькулятор ======
 function calculate(){
@@ -77,17 +78,14 @@ function showPaymentOptions(){
 function openWallet(){
     const comment = `passiveguide_${userId}`;
     const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
-
     const copyText = `Адрес: ${address}\nКомментарий: ${comment}\nСумма: 0.1 TON`;
     navigator.clipboard.writeText(copyText);
 
     window.open(tonLink, "_blank");
 
-    setTimeout(()=>{
-        alert("Если TON Wallet не открылся автоматически, вставьте данные из буфера обмена в ваш кошелек.");
-    }, 1000);
+    setTimeout(()=>alert("Если TON Wallet не открылся автоматически, вставьте данные из буфера обмена в ваш кошелек."), 1000);
 
-    setTimeout(()=>checkPayment(comment),3000);
+    setTimeout(()=>checkPayment(comment), 3000);
 }
 
 function copyData(){
@@ -146,7 +144,6 @@ async function checkPayment(comment, attempt=1){
 }
 
 document.getElementById("payBtn").onclick = showPaymentOptions;
-
 </script>
 </body>
 </html>
