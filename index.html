@@ -1,61 +1,458 @@
-function openWallet() {
-    const comment = `passiveguide_${userId}`;
-    const copyText = `💎 Адрес: ${address}
-📝 КОММЕНТАРИЙ (обязательно!): ${comment}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Crypto Passive 2026</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%);
+    color: #fff;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+h1 {
+    color: #00ff88;
+    font-size: 28px;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.calc {
+    background: rgba(26, 26, 26, 0.9);
+    padding: 24px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.calc h2 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: #00ff88;
+}
+
+input, select {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    border-radius: 12px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 16px;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #00ff88;
+}
+
+button {
+    background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+    color: #000;
+    padding: 14px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    margin: 10px 0;
+    width: 100%;
+}
+
+button:disabled {
+    background: #555;
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.payment-btn {
+    background: linear-gradient(135deg, #ff8800 0%, #cc6600 100%);
+    margin: 20px 0;
+}
+
+.payment-options {
+    display: none;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.payment-options button {
+    background: #2a2a2a;
+    color: #fff;
+    margin: 5px 0;
+}
+
+.payment-options button:first-child {
+    background: linear-gradient(135deg, #0088ff 0%, #0066cc 100%);
+}
+
+.payment-options button:nth-child(2) {
+    background: linear-gradient(135deg, #aa88ff 0%, #8866cc 100%);
+}
+
+.status {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.status.success {
+    background: rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    border: 1px solid #00ff88;
+}
+
+.status.error {
+    background: rgba(255, 68, 68, 0.2);
+    color: #ff4444;
+    border: 1px solid #ff4444;
+}
+
+.status.info {
+    background: rgba(255, 136, 0, 0.2);
+    color: #ff8800;
+    border: 1px solid #ff8800;
+}
+
+.progress-bar {
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    margin: 15px auto;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff88, #00cc66);
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 255, 136, 0.1);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.result strong {
+    color: #00ff88;
+    font-size: 24px;
+}
+
+.support-btn {
+    background: transparent;
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    margin-top: 20px;
+}
+
+.info-text {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    margin-top: 20px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>🚀 Crypto Passive 2026</h1>
+    <div class="subtitle">Полный гайд + калькулятор пассивного дохода</div>
+
+    <div class="calc">
+        <h2>📊 Калькулятор дохода</h2>
+        <input type="number" id="amount" value="1000" placeholder="Введите сумму в $">
+        <select id="platform">
+            <option value="12">💰 MEXC/Bybit (~12% годовых)</option>
+            <option value="5">💎 TON Staking (~5% годовых)</option>
+            <option value="8">📈 Binance Earn (~8% годовых)</option>
+        </select>
+        <button onclick="calculate()">📈 Рассчитать доход</button>
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <button id="payBtn" class="payment-btn">💰 Оплатить 0.1 TON</button>
+
+    <div id="paymentOptions" class="payment-options">
+        <button onclick="openTelegramWallet()">💎 Telegram Wallet</button>
+        <button onclick="openExternalWallet()">🔗 TON Keeper / Tonhub</button>
+        <button onclick="installWallet()">📲 Установить кошелёк</button>
+    </div>
+
+    <div id="status"></div>
+    <div id="progressBar" class="progress-bar" style="display: none;">
+        <div id="progressFill" class="progress-fill"></div>
+    </div>
+
+    <button id="supportBtn" class="support-btn" onclick="contactSupport()">💬 Поддержка</button>
+    <div class="info-text">После оплаты PDF придёт в этот чат через 10-30 секунд</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tg = window.Telegram?.WebApp;
+    
+    let userId = 0;
+    let userFirstName = 'Гость';
+    
+    if (tg) {
+        tg.ready();
+        if (tg.expand) tg.expand();
+        userId = tg.initDataUnsafe?.user?.id || 0;
+        userFirstName = tg.initDataUnsafe?.user?.first_name || 'Гость';
+        console.log('✅ Telegram WebApp инициализирован');
+    }
+    
+    const address = "UQA4aInFqReAIe9UrFhqu-CRzhpLAGwAZJKAEYMO_KIjK0ni";
+    const amountTON = 100000000;
+    const BACKEND_URL = "https://bb428d09-4733-4ff4-8409-0700a0314268-00-38aqagjlrdqft.riker.replit.dev/check_payment";
+    
+    let isPaying = false;
+    
+    if (tg && userId) {
+        tg.showPopup({
+            title: '👋 Привет!',
+            message: `${userFirstName}, для получения гайда:\n\n1️⃣ Нажмите "Оплатить 0.1 TON"\n2️⃣ Выберите способ оплаты\n3️⃣ Отправьте перевод\n\nПосле оплаты PDF придёт сюда!`,
+            buttons: [{type: 'close'}]
+        });
+    }
+    
+    // Калькулятор
+    window.calculate = function() {
+        const amount = parseFloat(document.getElementById('amount').value);
+        const apy = parseFloat(document.getElementById('platform').value);
+        
+        if (isNaN(amount) || amount <= 0) {
+            showStatus('Введите корректную сумму', 'error');
+            return;
+        }
+        
+        const monthly = (amount * apy / 100 / 12).toFixed(2);
+        const yearly = (amount * apy / 100).toFixed(2);
+        
+        const resultDiv = document.getElementById('result');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            📅 <strong>Ежемесячно:</strong> ${monthly} $<br>
+            📆 <strong>Годовой доход:</strong> ${yearly} $<br>
+            📊 <strong>Доходность:</strong> ${apy}% годовых
+        `;
+    };
+    
+    window.showStatus = function(message, type = 'info') {
+        const statusDiv = document.getElementById('status');
+        statusDiv.className = `status ${type}`;
+        statusDiv.innerHTML = message;
+        statusDiv.style.display = 'block';
+        
+        if (type !== 'error') {
+            setTimeout(() => {
+                if (statusDiv.innerHTML === message) {
+                    statusDiv.style.display = 'none';
+                }
+            }, 5000);
+        }
+    };
+    
+    window.showProgress = function(percent, text) {
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        
+        progressBar.style.display = 'block';
+        progressFill.style.width = `${percent}%`;
+        
+        if (text) {
+            showStatus(text, 'info');
+        }
+        
+        if (percent >= 100) {
+            setTimeout(() => {
+                progressBar.style.display = 'none';
+            }, 1000);
+        }
+    };
+    
+    window.showPaymentOptions = function() {
+        document.getElementById("paymentOptions").style.display = "flex";
+    };
+    
+    // Telegram Wallet (встроенный)
+    window.openTelegramWallet = function() {
+        const comment = `passiveguide_${userId}`;
+        const copyText = `💎 Адрес: ${address}
+📝 КОММЕНТАРИЙ: ${comment}
 💰 Сумма: 0.1 TON
 
 ⚠️ ВАЖНО:
 1. Укажите комментарий ТОЧНО как выше
 2. Без комментария оплата не будет засчитана
 3. Сумма: ровно 0.1 TON`;
-    
-    navigator.clipboard.writeText(copyText);
-    
-    // Определяем, есть ли встроенный кошелёк Telegram
-    const isTelegramWallet = tg?.platform === 'ios' || tg?.platform === 'android';
-    
-    if (isTelegramWallet) {
-        // Открываем встроенный Telegram Wallet
+        
+        navigator.clipboard.writeText(copyText);
+        
+        // Открываем Telegram Wallet
         window.open("https://t.me/wallet", "_blank");
         
-        tg.showPopup({
-            title: '💎 Telegram Wallet',
-            message: `1️⃣ Кошелёк открывается\n\n2️⃣ Вставьте данные из буфера обмена\n\n3️⃣ Обязательно укажите комментарий:\n"${comment}"\n\n4️⃣ Отправьте ровно 0.1 TON\n\nПосле оплаты PDF придёт через 10-30 секунд`,
-            buttons: [
-                {id: 'copy', text: '📋 Скопировать данные'},
-                {type: 'close', text: 'Понятно'}
-            ]
-        }, (buttonId) => {
-            if (buttonId === 'copy') {
-                navigator.clipboard.writeText(copyText);
-                tg.showPopup({
-                    title: '✅ Скопировано!',
-                    message: 'Данные скопированы. Вставьте их в кошелёк при оплате.',
-                    buttons: [{type: 'close'}]
-                });
-            }
-        });
-    } else {
-        // Для веб-версии открываем TON Keeper с автозаполнением
+        if (tg) {
+            tg.showPopup({
+                title: '💎 Telegram Wallet',
+                message: `1️⃣ Кошелёк открывается\n\n2️⃣ Вставьте данные из буфера обмена\n\n3️⃣ Обязательно укажите комментарий:\n"${comment}"\n\n4️⃣ Отправьте ровно 0.1 TON\n\nПосле оплаты PDF придёт через 10-30 секунд`,
+                buttons: [
+                    {id: 'copy', text: '📋 Скопировать данные'},
+                    {type: 'close', text: 'Понятно'}
+                ]
+            }, (buttonId) => {
+                if (buttonId === 'copy') {
+                    navigator.clipboard.writeText(copyText);
+                    tg.showPopup({
+                        title: '✅ Скопировано!',
+                        message: 'Данные скопированы. Вставьте их в кошелёк при оплате.',
+                        buttons: [{type: 'close'}]
+                    });
+                }
+            });
+        } else {
+            alert(`Данные скопированы!\n\nКомментарий: ${comment}\nСумма: 0.1 TON`);
+        }
+        
+        setTimeout(() => checkPayment(comment), 3000);
+    };
+    
+    // Внешний кошелёк (TON Keeper, Tonhub) с автозаполнением
+    window.openExternalWallet = function() {
+        const comment = `passiveguide_${userId}`;
         const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
         window.open(tonLink, "_blank");
         
-        tg.showPopup({
-            title: '💎 TON Keeper',
-            message: `Кошелёк открывается с предзаполненными данными.\n\nПроверьте комментарий: "${comment}"\n\nОтправьте ровно 0.1 TON`,
-            buttons: [{type: 'close'}]
-        });
+        showStatus('💎 Открывается TON Keeper / Tonhub с автозаполнением...', 'info');
+        
+        if (tg) {
+            tg.showPopup({
+                title: '🔗 TON Keeper / Tonhub',
+                message: `Кошелёк открывается с предзаполненными данными.\n\nПроверьте комментарий: "${comment}"\n\nОтправьте ровно 0.1 TON\n\nПосле оплаты PDF придёт через 10-30 секунд`,
+                buttons: [{type: 'close'}]
+            });
+        }
+        
+        setTimeout(() => checkPayment(comment), 3000);
+    };
+    
+    window.installWallet = function() {
+        window.open("https://ton.org/wallets", "_blank");
+    };
+    
+    window.contactSupport = function() {
+        if (tg) {
+            tg.openTelegramLink("https://t.me/AntonDrogovoz");
+        } else {
+            window.open("https://t.me/AntonDrogovoz", "_blank");
+        }
+    };
+    
+    async function checkPayment(comment, attempt = 1) {
+        if (isPaying) return;
+        isPaying = true;
+        
+        const maxAttempts = 20;
+        
+        if (attempt > maxAttempts) {
+            showStatus('⚠️ Платёж не найден. Проверьте комментарий и сумму.', 'error');
+            showProgress(0);
+            isPaying = false;
+            return;
+        }
+        
+        const percent = (attempt / maxAttempts) * 100;
+        showProgress(percent, `⏳ Проверка платежа... (${attempt}/${maxAttempts})`);
+        
+        try {
+            const resp = await fetch(BACKEND_URL, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ comment: comment })
+            });
+            
+            const data = await resp.json();
+            
+            if (data.paid) {
+                showProgress(100);
+                showStatus('✅ Оплата подтверждена! PDF отправлен в Telegram!', 'success');
+                document.getElementById("payBtn").disabled = true;
+                document.getElementById("paymentOptions").style.display = "none";
+                
+                if (tg) {
+                    tg.showPopup({
+                        title: '🎉 Успешно!',
+                        message: 'PDF с гайдом отправлен в Telegram. Проверьте чат с ботом!',
+                        buttons: [{type: 'close'}]
+                    });
+                }
+                
+                isPaying = false;
+                return;
+            }
+            
+            setTimeout(() => {
+                isPaying = false;
+                checkPayment(comment, attempt + 1);
+            }, 5000);
+            
+        } catch(e) {
+            console.error("Ошибка:", e);
+            showStatus('⚠️ Ошибка соединения. Повтор...', 'error');
+            setTimeout(() => {
+                isPaying = false;
+                checkPayment(comment, attempt + 1);
+            }, 5000);
+        }
     }
     
-    setTimeout(() => checkPayment(comment), 3000);
-}
-
-function openExternalWallet() {
-    const comment = `passiveguide_${userId}`;
-    const tonLink = `ton://transfer/${address}?amount=${amountTON}&text=${encodeURIComponent(comment)}`;
-    window.open(tonLink, "_blank");
+    document.getElementById("payBtn").onclick = function() {
+        if (userId === 0) {
+            showStatus('⚠️ Ошибка: не удалось определить пользователя', 'error');
+            if (tg) {
+                tg.showPopup({
+                    title: '⚠️ Ошибка',
+                    message: 'Не удалось определить пользователя. Убедитесь, что вы открыли приложение через Telegram.',
+                    buttons: [{type: 'close'}]
+                });
+            }
+            return;
+        }
+        showPaymentOptions();
+    };
     
-    showStatus('💎 Открывается TON Keeper / Tonhub с автозаполнением...', 'info');
-    
-    setTimeout(() => checkPayment(comment), 3000);
-}
+    console.log("👤 User ID:", userId);
+    console.log("🔗 Backend URL:", BACKEND_URL);
+});
+</script>
+</body>
+</html>
